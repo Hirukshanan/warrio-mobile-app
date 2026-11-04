@@ -1,21 +1,15 @@
 package com.warrio.app.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.warrio.app.ui.auth.LoginRoute
 import com.warrio.app.ui.auth.RegistrationRoute
+import com.warrio.app.ui.customer.CustomerTab
+import com.warrio.app.ui.customer.DashboardScreen
+import com.warrio.app.ui.customer.ProductWalletScreen
 
 @Composable
 fun WarrioApp(
@@ -40,7 +34,25 @@ fun WarrioApp(
             )
         }
         composable(WarrioDestination.Dashboard.route) {
-            DashboardScreen()
+            DashboardScreen(
+                onOpenWallet = {
+                    navController.navigate(WarrioDestination.Wallet.route) {
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+        composable(WarrioDestination.Wallet.route) {
+            ProductWalletScreen(
+                onSelectTab = { selectedTab ->
+                    if (selectedTab == CustomerTab.DASHBOARD) {
+                        navController.popBackStack(
+                            route = WarrioDestination.Dashboard.route,
+                            inclusive = false,
+                        )
+                    }
+                },
+            )
         }
     }
 }
@@ -49,32 +61,13 @@ sealed class WarrioDestination(val route: String) {
     data object Login : WarrioDestination("login")
     data object Register : WarrioDestination("register")
     data object Dashboard : WarrioDestination("dashboard")
+    data object Wallet : WarrioDestination("wallet")
 }
 
 private fun NavHostController.openDashboard() {
     navigate(WarrioDestination.Dashboard.route) {
         popUpTo(WarrioDestination.Login.route) { inclusive = true }
         launchSingleTop = true
-    }
-}
-
-@Composable
-private fun DashboardScreen() {
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(text = "Customer dashboard")
-            Text(
-                text = "Your product wallet will appear here.",
-                modifier = Modifier.padding(top = 8.dp),
-            )
-        }
     }
 }
 
