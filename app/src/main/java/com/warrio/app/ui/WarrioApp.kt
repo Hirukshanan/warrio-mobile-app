@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,6 +14,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.warrio.app.ui.auth.LoginRoute
+import com.warrio.app.ui.auth.RegistrationRoute
 
 @Composable
 fun WarrioApp(
@@ -25,12 +26,17 @@ fun WarrioApp(
         startDestination = WarrioDestination.Login.route,
     ) {
         composable(WarrioDestination.Login.route) {
-            LoginScreen(
-                onContinue = {
-                    navController.navigate(WarrioDestination.Dashboard.route) {
-                        popUpTo(WarrioDestination.Login.route) { inclusive = true }
-                    }
+            LoginRoute(
+                onAuthenticated = { navController.openDashboard() },
+                onOpenRegistration = {
+                    navController.navigate(WarrioDestination.Register.route)
                 },
+            )
+        }
+        composable(WarrioDestination.Register.route) {
+            RegistrationRoute(
+                onAuthenticated = { navController.openDashboard() },
+                onOpenLogin = { navController.popBackStack() },
             )
         }
         composable(WarrioDestination.Dashboard.route) {
@@ -41,29 +47,14 @@ fun WarrioApp(
 
 sealed class WarrioDestination(val route: String) {
     data object Login : WarrioDestination("login")
+    data object Register : WarrioDestination("register")
     data object Dashboard : WarrioDestination("dashboard")
 }
 
-@Composable
-private fun LoginScreen(onContinue: () -> Unit) {
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(text = "Welcome to Warrio")
-            Text(
-                text = "Authentication will be connected in the next task.",
-                modifier = Modifier.padding(vertical = 16.dp),
-            )
-            Button(onClick = onContinue) {
-                Text(text = "Open dashboard")
-            }
-        }
+private fun NavHostController.openDashboard() {
+    navigate(WarrioDestination.Dashboard.route) {
+        popUpTo(WarrioDestination.Login.route) { inclusive = true }
+        launchSingleTop = true
     }
 }
 

@@ -8,7 +8,10 @@ class WarrioDestinationTest {
     @Test
     fun routesAreStableAndUnique() {
         assertEquals("login", WarrioDestination.Login.route)
+        assertEquals("register", WarrioDestination.Register.route)
         assertEquals("dashboard", WarrioDestination.Dashboard.route)
         assertNotEquals(WarrioDestination.Login.route, WarrioDestination.Dashboard.route)
+        assertNotEquals(WarrioDestination.Login.route, WarrioDestination.Register.route)
+        assertNotEquals(WarrioDestination.Register.route, WarrioDestination.Dashboard.route)
     }
 }
