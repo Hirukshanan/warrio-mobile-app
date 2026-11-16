@@ -12,10 +12,15 @@ class WarrioDestinationTest {
         assertEquals("dashboard", WarrioDestination.Dashboard.route)
         assertEquals("wallet", WarrioDestination.Wallet.route)
         assertEquals("add-product", WarrioDestination.AddProduct.route)
+        assertEquals("product-details", WarrioDestination.ProductDetails.route)
         assertNotEquals(WarrioDestination.Login.route, WarrioDestination.Dashboard.route)
         assertNotEquals(WarrioDestination.Login.route, WarrioDestination.Register.route)
         assertNotEquals(WarrioDestination.Register.route, WarrioDestination.Dashboard.route)
         assertNotEquals(WarrioDestination.Dashboard.route, WarrioDestination.Wallet.route)
         assertNotEquals(WarrioDestination.Wallet.route, WarrioDestination.AddProduct.route)
+        assertNotEquals(
+            WarrioDestination.AddProduct.route,
+            WarrioDestination.ProductDetails.route,
+        )
     }
 }
