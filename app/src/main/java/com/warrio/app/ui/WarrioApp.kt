@@ -10,6 +10,7 @@ import com.warrio.app.ui.auth.RegistrationRoute
 import com.warrio.app.ui.customer.CustomerTab
 import com.warrio.app.ui.customer.DashboardScreen
 import com.warrio.app.ui.customer.ProductWalletScreen
+import com.warrio.app.ui.customer.ReceiptScanScreen
 
 @Composable
 fun WarrioApp(
@@ -44,6 +45,11 @@ fun WarrioApp(
         }
         composable(WarrioDestination.Wallet.route) {
             ProductWalletScreen(
+                onScanReceipt = {
+                    navController.navigate(WarrioDestination.ReceiptScan.route) {
+                        launchSingleTop = true
+                    }
+                },
                 onSelectTab = { selectedTab ->
                     if (selectedTab == CustomerTab.DASHBOARD) {
                         navController.popBackStack(
@@ -54,6 +60,9 @@ fun WarrioApp(
                 },
             )
         }
+        composable(WarrioDestination.ReceiptScan.route) {
+            ReceiptScanScreen(onBackToWallet = { navController.popBackStack() })
+        }
     }
 }
 
@@ -62,6 +71,7 @@ sealed class WarrioDestination(val route: String) {
     data object Register : WarrioDestination("register")
     data object Dashboard : WarrioDestination("dashboard")
     data object Wallet : WarrioDestination("wallet")
+    data object ReceiptScan : WarrioDestination("receipt-scan")
 }
 
 private fun NavHostController.openDashboard() {
