@@ -1,8 +1,11 @@
 package com.warrio.app.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,6 +15,7 @@ import com.warrio.app.ui.auth.RegistrationRoute
 import com.warrio.app.ui.customer.CustomerTab
 import com.warrio.app.ui.customer.DashboardScreen
 import com.warrio.app.ui.customer.ProductWalletScreen
+import com.warrio.app.ui.customer.ProductDetailsScreen
 import com.warrio.app.ui.customer.WalletProductUiModel
 import com.warrio.app.ui.product.ManualProductRoute
 
@@ -20,6 +24,7 @@ fun WarrioApp(
     navController: NavHostController = rememberNavController(),
 ) {
     val walletProducts = remember { mutableStateListOf<WalletProductUiModel>() }
+    var selectedProduct by remember { mutableStateOf<WalletProductUiModel?>(null) }
 
     NavHost(
         navController = navController,
@@ -62,6 +67,10 @@ fun WarrioApp(
                 onAddProduct = {
                     navController.navigate(WarrioDestination.AddProduct.route)
                 },
+                onOpenProduct = { product ->
+                    selectedProduct = product
+                    navController.navigate(WarrioDestination.ProductDetails.route)
+                },
             )
         }
         composable(WarrioDestination.AddProduct.route) {
@@ -73,6 +82,12 @@ fun WarrioApp(
                 },
             )
         }
+        composable(WarrioDestination.ProductDetails.route) {
+            ProductDetailsScreen(
+                product = selectedProduct,
+                onBack = { navController.popBackStack() },
+            )
+        }
     }
 }
 
@@ -82,6 +97,7 @@ sealed class WarrioDestination(val route: String) {
     data object Dashboard : WarrioDestination("dashboard")
     data object Wallet : WarrioDestination("wallet")
     data object AddProduct : WarrioDestination("add-product")
+    data object ProductDetails : WarrioDestination("product-details")
 }
 
 private fun NavHostController.openDashboard() {
