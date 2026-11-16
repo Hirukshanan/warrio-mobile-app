@@ -11,9 +11,15 @@ claims, repairs, and after-sales service records.
 - Minimum Android version: API 24
 - Compile SDK: API 37
 
-The current UI includes login and registration forms, validation, and navigation
-to the customer dashboard. Authentication uses a clearly marked local fake
-repository; Firebase integration will be added as a separate, tested task.
+The current UI includes login and registration forms, validation, a customer
+dashboard, bottom navigation, and an empty product-wallet state. Authentication
+uses a clearly marked local fake repository; Firebase and product persistence
+will be added as separate, tested tasks.
+
+Manual product registration is available as an in-memory development flow. It
+validates required product and warranty details, labels customer-entered items
+as `SELF_ADDED`, and keeps them only for the current app session until the team
+agrees on the shared cloud product contract.
 
 ## Local setup
 
