@@ -1,6 +1,8 @@
 package com.warrio.app.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,11 +13,15 @@ import com.warrio.app.ui.customer.CustomerTab
 import com.warrio.app.ui.customer.DashboardScreen
 import com.warrio.app.ui.customer.ProductWalletScreen
 import com.warrio.app.ui.customer.ReceiptScanScreen
+import com.warrio.app.ui.customer.WalletProductUiModel
+import com.warrio.app.ui.product.ManualProductRoute
 
 @Composable
 fun WarrioApp(
     navController: NavHostController = rememberNavController(),
 ) {
+    val walletProducts = remember { mutableStateListOf<WalletProductUiModel>() }
+
     NavHost(
         navController = navController,
         startDestination = WarrioDestination.Login.route,
@@ -50,6 +56,7 @@ fun WarrioApp(
                         launchSingleTop = true
                     }
                 },
+                products = walletProducts,
                 onSelectTab = { selectedTab ->
                     if (selectedTab == CustomerTab.DASHBOARD) {
                         navController.popBackStack(
@@ -57,6 +64,18 @@ fun WarrioApp(
                             inclusive = false,
                         )
                     }
+                },
+                onAddProduct = {
+                    navController.navigate(WarrioDestination.AddProduct.route)
+                },
+            )
+        }
+        composable(WarrioDestination.AddProduct.route) {
+            ManualProductRoute(
+                onBack = { navController.popBackStack() },
+                onProductCreated = { product ->
+                    walletProducts.add(product)
+                    navController.popBackStack()
                 },
             )
         }
@@ -72,6 +91,7 @@ sealed class WarrioDestination(val route: String) {
     data object Dashboard : WarrioDestination("dashboard")
     data object Wallet : WarrioDestination("wallet")
     data object ReceiptScan : WarrioDestination("receipt-scan")
+    data object AddProduct : WarrioDestination("add-product")
 }
 
 private fun NavHostController.openDashboard() {
