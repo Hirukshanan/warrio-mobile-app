@@ -29,7 +29,10 @@ values are handled explicitly when customers do not provide them.
 
 Open the wallet, choose **Scan receipt**, select one image, then tap
 **Extract text**. The bundled Latin-script ML Kit recognizer displays selectable
-raw text for review, with processing, no-text-found, failure, and retry states.
+editable raw text for review, with processing, success, no-text-found, failure,
+and retry states. Customers can correct, replace, or clear the receipt text;
+an empty or failed extraction also allows manual text entry. Re-extraction
+replaces any edits, as stated next to the editor. This step does not save products.
 Changing the image clears the previous result; cancelling the picker preserves
 it. Leaving the screen cancels its UI work. Extraction results are temporary
 and reset on screen recreation; the selected image URI is restored on rotation.
@@ -43,12 +46,19 @@ are subsequent integration steps with the product-details feature.
 
 Manual checks on a device:
 
-1. Select a readable Latin-script receipt and extract text; compare it to the photo.
-2. Select a photo without text and confirm the helpful empty-result message.
-3. Cancel the picker after extraction and confirm the image and result remain.
+1. Select a readable Latin-script receipt and extract text; compare it to the photo,
+   then correct and clear text in the editor.
+2. Select a photo without text and confirm the empty-result message and manual editor.
+3. Cancel the picker after editing and confirm the image and corrected text remain.
 4. Select another image while processing; confirm no old result appears for it.
 5. Try a large or rotated photo and an unreadable image; verify retry/reselection.
-6. Return to the wallet, and confirm manual product registration still works.
+6. Return to the wallet, register a product, and tap its card to verify details
+   navigation; confirm Scan receipt is still available in the populated wallet.
+
+`ReceiptOcrStateTest` uses synthetic recognition responses to cover loading,
+success, empty text, editable results, failure/retry, duplicate suppression, and
+cancellation. These unit tests do not validate the native model's OCR accuracy;
+the device checks above are still required.
 
 ## Local setup
 
