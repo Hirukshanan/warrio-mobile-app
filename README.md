@@ -43,9 +43,11 @@ machine-specific and sensitive files.
 
 ## CI and debug delivery
 
-`.github/workflows/android-ci.yml` runs on branch pushes, pull requests, and
-manual dispatches. It uses Ubuntu 24.04, Temurin JDK 21, the checked-in Gradle
-wrapper, Android SDK Platform 37, and Build Tools 36.0.0. It runs, in order:
+`.github/workflows/android-ci.yml` runs on pushes to `main`, pull requests, and
+manual dispatches. Feature-branch pushes do not trigger a separate run, avoiding
+duplicate builds when a pull request is open. It uses Ubuntu 24.04, Temurin
+JDK 21, the checked-in Gradle wrapper, Android SDK Platform 37, and Build Tools
+36.0.0. It runs, in order:
 
 1. `:app:testDebugUnitTest`
 2. `:app:lintDebug`
