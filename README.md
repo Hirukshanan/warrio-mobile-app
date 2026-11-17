@@ -21,6 +21,10 @@ validates required product and warranty details, labels customer-entered items
 as `SELF_ADDED`, and keeps them only for the current app session until the team
 agrees on the shared cloud product contract.
 
+Wallet product cards open a product-details screen that shows product,
+purchase, warranty, and verification information. Optional model and serial
+values are handled explicitly when customers do not provide them.
+
 ## Receipt text extraction
 
 Open the wallet, choose **Scan receipt**, select one image, then tap

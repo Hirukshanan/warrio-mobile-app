@@ -33,6 +33,7 @@ fun ProductWalletScreen(
     onSelectTab: (CustomerTab) -> Unit,
     onScanReceipt: () -> Unit,
     onAddProduct: () -> Unit,
+    onOpenProduct: (WalletProductUiModel) -> Unit,
 ) {
     CustomerScaffold(
         selectedTab = CustomerTab.WALLET,
@@ -50,6 +51,7 @@ fun ProductWalletScreen(
                 modifier = Modifier.padding(innerPadding),
                 onAddProduct = onAddProduct,
                 onScanReceipt = onScanReceipt,
+                onOpenProduct = onOpenProduct,
             )
         }
     }
@@ -104,6 +106,7 @@ private fun WalletProductList(
     modifier: Modifier,
     onAddProduct: () -> Unit,
     onScanReceipt: () -> Unit,
+    onOpenProduct: (WalletProductUiModel) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier
@@ -129,7 +132,10 @@ private fun WalletProductList(
             }
         }
         items(products) { product ->
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                onClick = { onOpenProduct(product) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -146,6 +152,11 @@ private fun WalletProductList(
                     Text("Warranty: ${product.warrantyMonths} months")
                     Text(
                         text = "SELF_ADDED",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                    Text(
+                        text = "View details",
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.labelLarge,
                     )
