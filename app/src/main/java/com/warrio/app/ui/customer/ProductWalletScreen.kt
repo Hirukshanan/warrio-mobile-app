@@ -31,6 +31,7 @@ data class WalletProductUiModel(
 fun ProductWalletScreen(
     products: List<WalletProductUiModel>,
     onSelectTab: (CustomerTab) -> Unit,
+    onScanReceipt: () -> Unit,
     onAddProduct: () -> Unit,
     onOpenProduct: (WalletProductUiModel) -> Unit,
 ) {
@@ -42,12 +43,14 @@ fun ProductWalletScreen(
             EmptyWallet(
                 modifier = Modifier.padding(innerPadding),
                 onAddProduct = onAddProduct,
+                onScanReceipt = onScanReceipt,
             )
         } else {
             WalletProductList(
                 products = products,
                 modifier = Modifier.padding(innerPadding),
                 onAddProduct = onAddProduct,
+                onScanReceipt = onScanReceipt,
                 onOpenProduct = onOpenProduct,
             )
         }
@@ -58,6 +61,7 @@ fun ProductWalletScreen(
 private fun EmptyWallet(
     modifier: Modifier,
     onAddProduct: () -> Unit,
+    onScanReceipt: () -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -87,6 +91,12 @@ private fun EmptyWallet(
         ) {
             Text("Register a product")
         }
+        Button(
+            onClick = onScanReceipt,
+            modifier = Modifier.padding(top = 12.dp),
+        ) {
+            Text("Scan receipt")
+        }
     }
 }
 
@@ -95,6 +105,7 @@ private fun WalletProductList(
     products: List<WalletProductUiModel>,
     modifier: Modifier,
     onAddProduct: () -> Unit,
+    onScanReceipt: () -> Unit,
     onOpenProduct: (WalletProductUiModel) -> Unit,
 ) {
     LazyColumn(
@@ -113,6 +124,11 @@ private fun WalletProductList(
         item {
             Button(onClick = onAddProduct) {
                 Text("Register another product")
+            }
+        }
+        item {
+            Button(onClick = onScanReceipt) {
+                Text("Scan receipt")
             }
         }
         items(products) { product ->
