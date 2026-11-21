@@ -33,6 +33,18 @@ class DocumentAttachmentUiModelTest {
     }
 
     @Test
+    fun rejectsDocumentWhenSizeCannotBeVerified() {
+        assertEquals(
+            "The file size could not be verified. Choose another file.",
+            validateDocument(document(mimeType = "application/pdf", sizeBytes = null)),
+        )
+        assertEquals(
+            "The file size could not be verified. Choose another file.",
+            validateDocument(document(mimeType = "image/png", sizeBytes = -1L)),
+        )
+    }
+
+    @Test
     fun formatsDocumentSizeForDisplay() {
         assertEquals("512 bytes", 512L.toReadableFileSize())
         assertEquals("2.0 KB", 2048L.toReadableFileSize())

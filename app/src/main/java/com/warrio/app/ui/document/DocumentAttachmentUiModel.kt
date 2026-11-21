@@ -19,7 +19,10 @@ internal fun validateDocument(document: DocumentAttachmentUiModel): String? = wh
     document.mimeType != "application/pdf" && !document.mimeType.startsWith("image/") ->
         "Choose a PDF or image file."
 
-    document.sizeBytes != null && document.sizeBytes > MAX_DOCUMENT_SIZE_BYTES ->
+    document.sizeBytes == null || document.sizeBytes < 0L ->
+        "The file size could not be verified. Choose another file."
+
+    document.sizeBytes > MAX_DOCUMENT_SIZE_BYTES ->
         "Choose a file smaller than 10 MB."
 
     else -> null

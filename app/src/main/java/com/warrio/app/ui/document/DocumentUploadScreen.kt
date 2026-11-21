@@ -22,10 +22,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DocumentUploadScreen(
@@ -36,6 +40,8 @@ fun DocumentUploadScreen(
     val context = LocalContext.current
     var selectedDocument by remember { mutableStateOf<DocumentAttachmentUiModel?>(null) }
     var validationError by remember { mutableStateOf<String?>(null) }
+    var isReadingDocument by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
             runCatching {
@@ -44,9 +50,25 @@ fun DocumentUploadScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION,
                 )
             }
-            val document = readDocumentMetadata(context.contentResolver, uri)
-            selectedDocument = document
-            validationError = validateDocument(document)
+            selectedDocument = null
+            validationError = null
+            isReadingDocument = true
+            coroutineScope.launch {
+                val metadataResult = withContext(Dispatchers.IO) {
+                    runCatching { readDocumentMetadata(context.contentResolver, uri) }
+                }
+                isReadingDocument = false
+                metadataResult.fold(
+                    onSuccess = { document ->
+                        selectedDocument = document
+                        validationError = validateDocument(document)
+                    },
+                    onFailure = {
+                        validationError =
+                            "The selected file could not be read. Choose another document."
+                    },
+                )
+            }
         }
     }
 
@@ -77,7 +99,13 @@ fun DocumentUploadScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     val document = selectedDocument
-                    if (document == null) {
+                    if (isReadingDocument) {
+                        Text("Reading document…", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Please wait while the file details are verified.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else if (document == null) {
                         Text("No document selected", style = MaterialTheme.typography.titleMedium)
                         Text(
                             "Supported formats: PDF and images, up to 10 MB.",
@@ -97,6 +125,7 @@ fun DocumentUploadScreen(
 
                     OutlinedButton(
                         onClick = { picker.launch(arrayOf("application/pdf", "image/*")) },
+                        enabled = !isReadingDocument,
                     ) {
                         Text(if (document == null) "Choose document" else "Choose another")
                     }
@@ -105,7 +134,10 @@ fun DocumentUploadScreen(
 
             Button(
                 onClick = { selectedDocument?.let(onAttachDocument) },
-                enabled = productName != null && selectedDocument != null && validationError == null,
+                enabled = productName != null &&
+                    selectedDocument != null &&
+                    validationError == null &&
+                    !isReadingDocument,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text("Attach to product")

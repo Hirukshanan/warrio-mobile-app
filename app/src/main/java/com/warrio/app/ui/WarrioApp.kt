@@ -28,7 +28,7 @@ fun WarrioApp(
 ) {
     val walletProducts = remember { mutableStateListOf<WalletProductUiModel>() }
     val productDocuments = remember {
-        mutableStateMapOf<WalletProductUiModel, List<DocumentAttachmentUiModel>>()
+        mutableStateMapOf<String, List<DocumentAttachmentUiModel>>()
     }
     var selectedProduct by remember { mutableStateOf<WalletProductUiModel?>(null) }
 
@@ -91,7 +91,7 @@ fun WarrioApp(
         composable(WarrioDestination.ProductDetails.route) {
             ProductDetailsScreen(
                 product = selectedProduct,
-                documents = selectedProduct?.let { productDocuments[it] }.orEmpty(),
+                documents = selectedProduct?.let { productDocuments[it.id] }.orEmpty(),
                 onBack = { navController.popBackStack() },
                 onAddDocument = {
                     navController.navigate(WarrioDestination.AddDocument.route)
@@ -104,13 +104,25 @@ fun WarrioApp(
                 onBack = { navController.popBackStack() },
                 onAttachDocument = { document ->
                     selectedProduct?.let { product ->
-                        productDocuments[product] = productDocuments[product].orEmpty() + document
+                        attachDocumentToProduct(
+                            productDocuments = productDocuments,
+                            productId = product.id,
+                            document = document,
+                        )
                     }
                     navController.popBackStack()
                 },
             )
         }
     }
+}
+
+internal fun attachDocumentToProduct(
+    productDocuments: MutableMap<String, List<DocumentAttachmentUiModel>>,
+    productId: String,
+    document: DocumentAttachmentUiModel,
+) {
+    productDocuments[productId] = productDocuments[productId].orEmpty() + document
 }
 
 sealed class WarrioDestination(val route: String) {
