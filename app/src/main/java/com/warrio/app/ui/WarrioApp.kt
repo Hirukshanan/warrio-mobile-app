@@ -3,6 +3,7 @@ package com.warrio.app.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -18,6 +19,8 @@ import com.warrio.app.ui.customer.ProductWalletScreen
 import com.warrio.app.ui.customer.ReceiptScanScreen
 import com.warrio.app.ui.customer.ProductDetailsScreen
 import com.warrio.app.ui.customer.WalletProductUiModel
+import com.warrio.app.ui.document.DocumentAttachmentUiModel
+import com.warrio.app.ui.document.DocumentUploadScreen
 import com.warrio.app.ui.product.ManualProductRoute
 
 @Composable
@@ -25,6 +28,9 @@ fun WarrioApp(
     navController: NavHostController = rememberNavController(),
 ) {
     val walletProducts = remember { mutableStateListOf<WalletProductUiModel>() }
+    val productDocuments = remember {
+        mutableStateMapOf<String, List<DocumentAttachmentUiModel>>()
+    }
     var selectedProduct by remember { mutableStateOf<WalletProductUiModel?>(null) }
 
     NavHost(
@@ -94,10 +100,38 @@ fun WarrioApp(
         composable(WarrioDestination.ProductDetails.route) {
             ProductDetailsScreen(
                 product = selectedProduct,
+                documents = selectedProduct?.let { productDocuments[it.id] }.orEmpty(),
                 onBack = { navController.popBackStack() },
+                onAddDocument = {
+                    navController.navigate(WarrioDestination.AddDocument.route)
+                },
+            )
+        }
+        composable(WarrioDestination.AddDocument.route) {
+            DocumentUploadScreen(
+                productName = selectedProduct?.name,
+                onBack = { navController.popBackStack() },
+                onAttachDocument = { document ->
+                    selectedProduct?.let { product ->
+                        attachDocumentToProduct(
+                            productDocuments = productDocuments,
+                            productId = product.id,
+                            document = document,
+                        )
+                    }
+                    navController.popBackStack()
+                },
             )
         }
     }
+}
+
+internal fun attachDocumentToProduct(
+    productDocuments: MutableMap<String, List<DocumentAttachmentUiModel>>,
+    productId: String,
+    document: DocumentAttachmentUiModel,
+) {
+    productDocuments[productId] = productDocuments[productId].orEmpty() + document
 }
 
 sealed class WarrioDestination(val route: String) {
@@ -108,6 +142,7 @@ sealed class WarrioDestination(val route: String) {
     data object ReceiptScan : WarrioDestination("receipt-scan")
     data object AddProduct : WarrioDestination("add-product")
     data object ProductDetails : WarrioDestination("product-details")
+    data object AddDocument : WarrioDestination("add-document")
 }
 
 private fun NavHostController.openDashboard() {

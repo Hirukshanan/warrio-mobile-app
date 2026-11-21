@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,11 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.warrio.app.ui.document.DocumentAttachmentUiModel
 
 @Composable
 fun ProductDetailsScreen(
     product: WalletProductUiModel?,
+    documents: List<DocumentAttachmentUiModel>,
     onBack: () -> Unit,
+    onAddDocument: () -> Unit,
 ) {
     Scaffold { innerPadding ->
         Column(
@@ -40,14 +44,22 @@ fun ProductDetailsScreen(
             if (product == null) {
                 MissingProductDetails(onBack = onBack)
             } else {
-                ProductDetails(product = product)
+                ProductDetails(
+                    product = product,
+                    documents = documents,
+                    onAddDocument = onAddDocument,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ProductDetails(product: WalletProductUiModel) {
+private fun ProductDetails(
+    product: WalletProductUiModel,
+    documents: List<DocumentAttachmentUiModel>,
+    onAddDocument: () -> Unit,
+) {
     Text(
         text = product.name,
         style = MaterialTheme.typography.headlineMedium,
@@ -71,6 +83,41 @@ private fun ProductDetails(product: WalletProductUiModel) {
             ProductDetailRow("Serial number", product.serialNumber.orNotProvided())
             ProductDetailRow("Purchase date", product.purchaseDate)
             ProductDetailRow("Warranty period", "${product.warrantyMonths} months")
+        }
+    }
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = "Documents",
+                style = MaterialTheme.typography.titleLarge,
+            )
+            if (documents.isEmpty()) {
+                Text(
+                    text = "No documents attached yet.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                documents.forEach { document ->
+                    Column {
+                        Text(
+                            text = document.displayName,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text(
+                            text = document.readableDescription,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+            Button(onClick = onAddDocument) {
+                Text("Add document")
+            }
         }
     }
 
