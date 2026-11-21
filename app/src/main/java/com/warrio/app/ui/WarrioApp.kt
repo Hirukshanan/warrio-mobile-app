@@ -16,6 +16,7 @@ import com.warrio.app.ui.auth.RegistrationRoute
 import com.warrio.app.ui.customer.CustomerTab
 import com.warrio.app.ui.customer.DashboardScreen
 import com.warrio.app.ui.customer.ProductWalletScreen
+import com.warrio.app.ui.customer.ReceiptScanScreen
 import com.warrio.app.ui.customer.ProductDetailsScreen
 import com.warrio.app.ui.customer.WalletProductUiModel
 import com.warrio.app.ui.document.DocumentAttachmentUiModel
@@ -61,6 +62,11 @@ fun WarrioApp(
         }
         composable(WarrioDestination.Wallet.route) {
             ProductWalletScreen(
+                onScanReceipt = {
+                    navController.navigate(WarrioDestination.ReceiptScan.route) {
+                        launchSingleTop = true
+                    }
+                },
                 products = walletProducts,
                 onSelectTab = { selectedTab ->
                     if (selectedTab == CustomerTab.DASHBOARD) {
@@ -87,6 +93,9 @@ fun WarrioApp(
                     navController.popBackStack()
                 },
             )
+        }
+        composable(WarrioDestination.ReceiptScan.route) {
+            ReceiptScanScreen(onBackToWallet = { navController.popBackStack() })
         }
         composable(WarrioDestination.ProductDetails.route) {
             ProductDetailsScreen(
@@ -130,6 +139,7 @@ sealed class WarrioDestination(val route: String) {
     data object Register : WarrioDestination("register")
     data object Dashboard : WarrioDestination("dashboard")
     data object Wallet : WarrioDestination("wallet")
+    data object ReceiptScan : WarrioDestination("receipt-scan")
     data object AddProduct : WarrioDestination("add-product")
     data object ProductDetails : WarrioDestination("product-details")
     data object AddDocument : WarrioDestination("add-document")
