@@ -27,7 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-internal fun ReceiptTextRecognition(uri: Uri) {
+internal fun ReceiptTextRecognition(uri: Uri, onReviewProduct: (String) -> Unit) {
     val resolver = LocalContext.current.contentResolver
     val scope = rememberCoroutineScope()
     val state = remember(uri, resolver, scope) {
@@ -98,10 +98,15 @@ internal fun ReceiptTextRecognition(uri: Uri) {
                 maxLines = 12,
             )
             Text(
-                text = "Check and correct this text before it is used for product details. " +
-                    "Nothing has been saved. Extracting again replaces your edits.",
+                text = "Extracting again replaces your edits.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Button(
+                onClick = { onReviewProduct(result.text) },
+                enabled = result.text.isNotBlank(),
+            ) {
+                Text("Review product details")
+            }
         }
     }
 }

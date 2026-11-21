@@ -48,6 +48,10 @@ class ManualProductViewModel : ViewModel() {
     var uiState by mutableStateOf(ManualProductUiState())
         private set
 
+    internal fun prepareReceiptReview(text: String) {
+        uiState = receiptProductDraft(text)
+    }
+
     fun updateName(value: String) {
         uiState = uiState.copy(name = value, nameError = null)
     }
@@ -73,6 +77,7 @@ class ManualProductViewModel : ViewModel() {
     }
 
     fun submit() {
+        if (uiState.createdProduct != null) return
         val validation = ManualProductValidator.validate(
             name = uiState.name,
             brand = uiState.brand,
@@ -107,6 +112,7 @@ fun ManualProductRoute(
     onBack: () -> Unit,
     onProductCreated: (WalletProductUiModel) -> Unit,
     viewModel: ManualProductViewModel = viewModel(),
+    reviewingReceipt: Boolean = false,
 ) {
     ManualProductScreen(
         uiState = viewModel.uiState,
@@ -118,6 +124,7 @@ fun ManualProductRoute(
         onWarrantyMonthsChanged = viewModel::updateWarrantyMonths,
         onSubmit = viewModel::submit,
         onBack = onBack,
+        reviewingReceipt = reviewingReceipt,
     )
 
     LaunchedEffect(viewModel.uiState.createdProduct) {
@@ -136,6 +143,7 @@ private fun ManualProductScreen(
     onWarrantyMonthsChanged: (String) -> Unit,
     onSubmit: () -> Unit,
     onBack: () -> Unit,
+    reviewingReceipt: Boolean,
 ) {
     Scaffold { innerPadding ->
         Column(
@@ -147,14 +155,18 @@ private fun ManualProductScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             TextButton(onClick = onBack) {
-                Text("Back to wallet")
+                Text(if (reviewingReceipt) "Back to receipt" else "Back to wallet")
             }
             Text(
-                text = "Register a product",
+                text = if (reviewingReceipt) "Review product details" else "Register a product",
                 style = MaterialTheme.typography.headlineMedium,
             )
             Text(
-                text = "Manual registrations are saved as SELF_ADDED until an authorized retailer verifies them.",
+                text = if (reviewingReceipt) {
+                    "Check the suggested details and fill in anything missing. The product will be added as SELF_ADDED."
+                } else {
+                    "Manual registrations are saved as SELF_ADDED until an authorized retailer verifies them."
+                },
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
