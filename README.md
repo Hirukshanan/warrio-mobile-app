@@ -32,7 +32,10 @@ Open the wallet, choose **Scan receipt**, select one image, then tap
 editable raw text for review, with processing, success, no-text-found, failure,
 and retry states. Customers can correct, replace, or clear the receipt text;
 an empty or failed extraction also allows manual text entry. Re-extraction
-replaces any edits, as stated next to the editor. This step does not save products.
+replaces any edits, as stated next to the editor. **Review product details**
+uses the edited text to suggest fields in the existing registration form.
+Review or correct the suggestions, fill in missing fields, then tap **Add to
+wallet** to save one `SELF_ADDED` product for the current app session.
 Changing the image clears the previous result; cancelling the picker preserves
 it. Leaving the screen cancels its UI work. Extraction results are temporary
 and reset on screen recreation; the selected image URI is restored on rotation.
@@ -41,8 +44,9 @@ Image loading and recognition wait off the UI thread. The display preview is
 sampled to a longest edge of at most 1600 pixels; OCR uses a separate input capped
 at 2400 pixels to retain more text detail. Photo orientation is applied before
 recognition. Receipt contents are not logged or sent to a project backend.
-Product-field parsing, shared Product mapping, confirmation, and Firebase saving
-are subsequent integration steps with the product-details feature.
+Prefill uses clearly labelled values such as `Product:`, `Brand:`,
+`Purchase date:` (ISO format), and `Warranty: 12 months`. Ambiguous or
+unusable values are left blank. Firebase persistence is a follow-up step.
 
 Manual checks on a device:
 
@@ -54,6 +58,9 @@ Manual checks on a device:
 5. Try a large or rotated photo and an unreadable image; verify retry/reselection.
 6. Return to the wallet, register a product, and tap its card to verify details
    navigation; confirm Scan receipt is still available in the populated wallet.
+7. Correct the receipt text, open the review form, and go back to confirm the
+   text is still there. Open the form again, finish the required fields, and tap
+   **Add to wallet**. Open the new product and verify the reviewed values.
 
 `ReceiptOcrStateTest` uses synthetic recognition responses to cover loading,
 success, empty text, editable results, failure/retry, duplicate suppression, and

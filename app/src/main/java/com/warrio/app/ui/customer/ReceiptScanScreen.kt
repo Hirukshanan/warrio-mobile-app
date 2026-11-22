@@ -43,7 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun ReceiptScanScreen(onBackToWallet: () -> Unit) {
+fun ReceiptScanScreen(onBackToWallet: () -> Unit, onReviewProduct: (String) -> Unit) {
     var selectedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
     val picker = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
         if (uri != null) selectedImageUri = uri.toString()
@@ -73,7 +73,7 @@ fun ReceiptScanScreen(onBackToWallet: () -> Unit) {
             if (uri == null) {
                 Text("No receipt image selected.")
             } else {
-                key(uri) { ReceiptPreview(Uri.parse(uri)) }
+                key(uri) { ReceiptPreview(Uri.parse(uri), onReviewProduct) }
             }
         }
     }
@@ -86,7 +86,7 @@ private sealed interface ReceiptPreviewState {
 }
 
 @Composable
-private fun ReceiptPreview(uri: Uri) {
+private fun ReceiptPreview(uri: Uri, onReviewProduct: (String) -> Unit) {
     val resolver = LocalContext.current.contentResolver
     val state by produceState<ReceiptPreviewState>(ReceiptPreviewState.Loading, uri, resolver) {
         value = try {
@@ -130,6 +130,6 @@ private fun ReceiptPreview(uri: Uri) {
         }
     }
     if (state is ReceiptPreviewState.Ready) {
-        ReceiptTextRecognition(uri)
+        ReceiptTextRecognition(uri, onReviewProduct)
     }
 }

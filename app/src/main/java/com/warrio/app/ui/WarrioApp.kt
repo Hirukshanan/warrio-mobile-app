@@ -7,9 +7,12 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import com.warrio.app.ui.auth.LoginRoute
 import com.warrio.app.ui.auth.RegistrationRoute
@@ -22,6 +25,7 @@ import com.warrio.app.ui.customer.WalletProductUiModel
 import com.warrio.app.ui.document.DocumentAttachmentUiModel
 import com.warrio.app.ui.document.DocumentUploadScreen
 import com.warrio.app.ui.product.ManualProductRoute
+import com.warrio.app.ui.product.ManualProductViewModel
 
 @Composable
 fun WarrioApp(
@@ -95,7 +99,33 @@ fun WarrioApp(
             )
         }
         composable(WarrioDestination.ReceiptScan.route) {
-            ReceiptScanScreen(onBackToWallet = { navController.popBackStack() })
+            val reviewModel: ManualProductViewModel = viewModel()
+            ReceiptScanScreen(
+                onBackToWallet = { navController.popBackStack() },
+                onReviewProduct = { text ->
+                    reviewModel.prepareReceiptReview(text)
+                    navController.navigate(WarrioDestination.ReceiptProductReview.route) {
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+        dialog(
+            route = WarrioDestination.ReceiptProductReview.route,
+            dialogProperties = DialogProperties(usePlatformDefaultWidth = false),
+        ) { entry ->
+            val receiptEntry = remember(entry) {
+                navController.getBackStackEntry(WarrioDestination.ReceiptScan.route)
+            }
+            ManualProductRoute(
+                onBack = { navController.popBackStack() },
+                onProductCreated = { product ->
+                    walletProducts.add(product)
+                    navController.popBackStack(WarrioDestination.Wallet.route, inclusive = false)
+                },
+                viewModel = viewModel(viewModelStoreOwner = receiptEntry),
+                reviewingReceipt = true,
+            )
         }
         composable(WarrioDestination.ProductDetails.route) {
             ProductDetailsScreen(
@@ -140,6 +170,7 @@ sealed class WarrioDestination(val route: String) {
     data object Dashboard : WarrioDestination("dashboard")
     data object Wallet : WarrioDestination("wallet")
     data object ReceiptScan : WarrioDestination("receipt-scan")
+    data object ReceiptProductReview : WarrioDestination("receipt-product-review")
     data object AddProduct : WarrioDestination("add-product")
     data object ProductDetails : WarrioDestination("product-details")
     data object AddDocument : WarrioDestination("add-document")
