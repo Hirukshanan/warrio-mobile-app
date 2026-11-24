@@ -25,6 +25,10 @@ Wallet product cards open a product-details screen that shows product,
 purchase, warranty, and verification information. Optional model and serial
 values are handled explicitly when customers do not provide them.
 
+Customers can also start a warranty claim from product details, describe the
+problem, and see a session-only `SUBMITTED` claim on that product. This UI does
+not yet send claims to a retailer, service provider, or backend.
+
 ## Receipt text extraction
 
 Open the wallet, choose **Scan receipt**, select one image, then tap

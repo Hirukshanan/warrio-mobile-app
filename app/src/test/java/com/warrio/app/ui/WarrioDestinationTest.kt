@@ -15,6 +15,7 @@ class WarrioDestinationTest {
         assertEquals("receipt-scan", WarrioDestination.ReceiptScan.route)
         assertEquals("product-details", WarrioDestination.ProductDetails.route)
         assertEquals("add-document", WarrioDestination.AddDocument.route)
+        assertEquals("submit-claim", WarrioDestination.SubmitClaim.route)
         assertNotEquals(WarrioDestination.Login.route, WarrioDestination.Dashboard.route)
         assertNotEquals(WarrioDestination.Login.route, WarrioDestination.Register.route)
         assertNotEquals(WarrioDestination.Register.route, WarrioDestination.Dashboard.route)
@@ -30,6 +31,10 @@ class WarrioDestinationTest {
         assertNotEquals(
             WarrioDestination.ProductDetails.route,
             WarrioDestination.AddDocument.route,
+        )
+        assertNotEquals(
+            WarrioDestination.AddDocument.route,
+            WarrioDestination.SubmitClaim.route,
         )
     }
 }
