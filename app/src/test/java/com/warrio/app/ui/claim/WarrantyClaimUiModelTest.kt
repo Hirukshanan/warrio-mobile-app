@@ -31,8 +31,24 @@ class WarrantyClaimUiModelTest {
     @Test
     fun descriptionOverLimitIsRejected() {
         assertEquals(
-            "Keep the description under 1000 characters.",
+            "Keep the description at or below 1000 characters.",
             validateClaimDescription("x".repeat(MAX_CLAIM_DESCRIPTION_LENGTH + 1)),
+        )
+    }
+
+    @Test
+    fun exactlyOneThousandCharactersIsAccepted() {
+        assertNull(validateClaimDescription("x".repeat(MAX_CLAIM_DESCRIPTION_LENGTH)))
+    }
+
+    @Test
+    fun pastedTextAfterOneThousandCharactersIsNotSilentlyAccepted() {
+        val pastedDescription = "x".repeat(MAX_CLAIM_DESCRIPTION_LENGTH) +
+            " additional problem details"
+
+        assertEquals(
+            "Keep the description at or below 1000 characters.",
+            validateClaimDescription(pastedDescription),
         )
     }
 

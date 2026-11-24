@@ -28,8 +28,8 @@ internal fun validateClaimDescription(description: String): String? = when {
     description.trim().length < MIN_CLAIM_DESCRIPTION_LENGTH ->
         "Add at least $MIN_CLAIM_DESCRIPTION_LENGTH characters so the problem is clear."
 
-    description.trim().length > MAX_CLAIM_DESCRIPTION_LENGTH ->
-        "Keep the description under $MAX_CLAIM_DESCRIPTION_LENGTH characters."
+    description.length > MAX_CLAIM_DESCRIPTION_LENGTH ->
+        "Keep the description at or below $MAX_CLAIM_DESCRIPTION_LENGTH characters."
 
     else -> null
 }

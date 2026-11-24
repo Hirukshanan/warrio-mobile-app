@@ -75,7 +75,7 @@ fun ClaimSubmissionScreen(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { value ->
-                        description = value.take(MAX_CLAIM_DESCRIPTION_LENGTH + 1)
+                        description = value
                         descriptionError = null
                     },
                     label = { Text("Problem description") },
@@ -86,7 +86,7 @@ fun ClaimSubmissionScreen(
                     supportingText = {
                         Text(
                             descriptionError
-                                ?: "${description.trim().length}/$MAX_CLAIM_DESCRIPTION_LENGTH characters",
+                                ?: "${description.length}/$MAX_CLAIM_DESCRIPTION_LENGTH characters",
                         )
                     },
                 )
