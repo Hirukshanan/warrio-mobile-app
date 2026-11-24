@@ -19,14 +19,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.warrio.app.ui.claim.WarrantyClaimUiModel
 import com.warrio.app.ui.document.DocumentAttachmentUiModel
 
 @Composable
 fun ProductDetailsScreen(
     product: WalletProductUiModel?,
     documents: List<DocumentAttachmentUiModel>,
+    claims: List<WarrantyClaimUiModel>,
     onBack: () -> Unit,
     onAddDocument: () -> Unit,
+    onStartClaim: () -> Unit,
 ) {
     Scaffold { innerPadding ->
         Column(
@@ -47,7 +50,9 @@ fun ProductDetailsScreen(
                 ProductDetails(
                     product = product,
                     documents = documents,
+                    claims = claims,
                     onAddDocument = onAddDocument,
+                    onStartClaim = onStartClaim,
                 )
             }
         }
@@ -58,7 +63,9 @@ fun ProductDetailsScreen(
 private fun ProductDetails(
     product: WalletProductUiModel,
     documents: List<DocumentAttachmentUiModel>,
+    claims: List<WarrantyClaimUiModel>,
     onAddDocument: () -> Unit,
+    onStartClaim: () -> Unit,
 ) {
     Text(
         text = product.name,
@@ -83,6 +90,38 @@ private fun ProductDetails(
             ProductDetailRow("Serial number", product.serialNumber.orNotProvided())
             ProductDetailRow("Purchase date", product.purchaseDate)
             ProductDetailRow("Warranty period", "${product.warrantyMonths} months")
+        }
+    }
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = "Warranty claims",
+                style = MaterialTheme.typography.titleLarge,
+            )
+            if (claims.isEmpty()) {
+                Text(
+                    text = "No claims submitted for this product.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                claims.forEach { claim ->
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = claim.status.displayName,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(claim.description)
+                    }
+                }
+            }
+            Button(onClick = onStartClaim) {
+                Text("Start a claim")
+            }
         }
     }
 

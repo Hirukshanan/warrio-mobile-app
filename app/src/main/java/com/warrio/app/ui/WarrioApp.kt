@@ -16,6 +16,9 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import com.warrio.app.ui.auth.LoginRoute
 import com.warrio.app.ui.auth.RegistrationRoute
+import com.warrio.app.ui.claim.ClaimSubmissionScreen
+import com.warrio.app.ui.claim.WarrantyClaimUiModel
+import com.warrio.app.ui.claim.addClaimToProduct
 import com.warrio.app.ui.customer.CustomerTab
 import com.warrio.app.ui.customer.DashboardScreen
 import com.warrio.app.ui.customer.ProductWalletScreen
@@ -34,6 +37,9 @@ fun WarrioApp(
     val walletProducts = remember { mutableStateListOf<WalletProductUiModel>() }
     val productDocuments = remember {
         mutableStateMapOf<String, List<DocumentAttachmentUiModel>>()
+    }
+    val productClaims = remember {
+        mutableStateMapOf<String, List<WarrantyClaimUiModel>>()
     }
     var selectedProduct by remember { mutableStateOf<WalletProductUiModel?>(null) }
 
@@ -131,9 +137,13 @@ fun WarrioApp(
             ProductDetailsScreen(
                 product = selectedProduct,
                 documents = selectedProduct?.let { productDocuments[it.id] }.orEmpty(),
+                claims = selectedProduct?.let { productClaims[it.id] }.orEmpty(),
                 onBack = { navController.popBackStack() },
                 onAddDocument = {
                     navController.navigate(WarrioDestination.AddDocument.route)
+                },
+                onStartClaim = {
+                    navController.navigate(WarrioDestination.SubmitClaim.route)
                 },
             )
         }
@@ -149,6 +159,16 @@ fun WarrioApp(
                             document = document,
                         )
                     }
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(WarrioDestination.SubmitClaim.route) {
+            ClaimSubmissionScreen(
+                product = selectedProduct,
+                onBack = { navController.popBackStack() },
+                onSubmitClaim = { claim ->
+                    addClaimToProduct(productClaims, claim)
                     navController.popBackStack()
                 },
             )
@@ -174,6 +194,7 @@ sealed class WarrioDestination(val route: String) {
     data object AddProduct : WarrioDestination("add-product")
     data object ProductDetails : WarrioDestination("product-details")
     data object AddDocument : WarrioDestination("add-document")
+    data object SubmitClaim : WarrioDestination("submit-claim")
 }
 
 private fun NavHostController.openDashboard() {
