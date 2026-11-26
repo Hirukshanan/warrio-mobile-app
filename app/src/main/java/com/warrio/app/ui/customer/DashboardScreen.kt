@@ -13,11 +13,35 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun DashboardScreen(
+    products: List<WalletProductUiModel>,
     onOpenWallet: () -> Unit,
 ) {
+    val today = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+    val upcomingExpiries = products.mapNotNull { product ->
+        runCatching {
+            val purchaseDate = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).apply {
+                isLenient = false
+            }.parse(product.purchaseDate) ?: return@runCatching null
+            val expiry = Calendar.getInstance().apply {
+                time = purchaseDate
+                add(Calendar.MONTH, product.warrantyMonths)
+            }.timeInMillis
+            val daysLeft = TimeUnit.MILLISECONDS.toDays(expiry - today)
+            if (daysLeft in 0L..30L) product to daysLeft else null
+        }.getOrNull()
+    }.sortedBy { it.second }
     CustomerScaffold(
         selectedTab = CustomerTab.DASHBOARD,
         onSelectTab = { selectedTab ->
@@ -46,15 +70,37 @@ fun DashboardScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 DashboardSummaryCard(
-                    value = "0",
+                    value = products.size.toString(),
                     label = "Products",
                     modifier = Modifier.weight(1f),
                 )
                 DashboardSummaryCard(
-                    value = "0",
+                    value = upcomingExpiries.size.toString(),
                     label = "Warranties",
                     modifier = Modifier.weight(1f),
                 )
+            }
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text("Warranty reminders", style = MaterialTheme.typography.titleLarge)
+                    if (upcomingExpiries.isEmpty()) {
+                        Text(
+                            "No warranties expire in the next 30 days.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        upcomingExpiries.forEach { (product, daysLeft) ->
+                            Text(
+                                text = "${product.name} — expires in $daysLeft ${if (daysLeft == 1L) "day" else "days"}",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
+                    }
+                }
             }
 
             Card(modifier = Modifier.fillMaxWidth()) {

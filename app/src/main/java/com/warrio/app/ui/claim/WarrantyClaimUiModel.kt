@@ -11,6 +11,7 @@ data class WarrantyClaimUiModel(
     val productId: String,
     val description: String,
     val status: WarrantyClaimStatus = WarrantyClaimStatus.SUBMITTED,
+    val submittedAtEpochMillis: Long = System.currentTimeMillis(),
 )
 
 internal fun addClaimToProduct(

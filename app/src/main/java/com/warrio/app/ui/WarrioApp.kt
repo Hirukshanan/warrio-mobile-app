@@ -1,6 +1,7 @@
 package com.warrio.app.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -19,6 +20,8 @@ import com.warrio.app.ui.auth.RegistrationRoute
 import com.warrio.app.ui.claim.ClaimSubmissionScreen
 import com.warrio.app.ui.claim.WarrantyClaimUiModel
 import com.warrio.app.ui.claim.addClaimToProduct
+import org.json.JSONArray
+import org.json.JSONObject
 import com.warrio.app.ui.customer.CustomerTab
 import com.warrio.app.ui.customer.DashboardScreen
 import com.warrio.app.ui.customer.ProductWalletScreen
@@ -34,12 +37,34 @@ import com.warrio.app.ui.product.ManualProductViewModel
 fun WarrioApp(
     navController: NavHostController = rememberNavController(),
 ) {
+    val appContext = LocalContext.current.applicationContext
+    val claimPreferences = remember {
+        appContext.getSharedPreferences("warrio_claims", android.content.Context.MODE_PRIVATE)
+    }
     val walletProducts = remember { mutableStateListOf<WalletProductUiModel>() }
     val productDocuments = remember {
         mutableStateMapOf<String, List<DocumentAttachmentUiModel>>()
     }
     val productClaims = remember {
-        mutableStateMapOf<String, List<WarrantyClaimUiModel>>()
+        mutableStateMapOf<String, List<WarrantyClaimUiModel>>().apply {
+            val savedClaims = runCatching {
+                JSONArray(claimPreferences.getString("claims", "[]")).let { array ->
+                    (0 until array.length()).mapNotNull { index ->
+                        val item = array.optJSONObject(index) ?: return@mapNotNull null
+                        WarrantyClaimUiModel(
+                            id = item.optString("id"),
+                            productId = item.optString("productId"),
+                            description = item.optString("description"),
+                            status = runCatching {
+                                com.warrio.app.ui.claim.WarrantyClaimStatus.valueOf(item.optString("status"))
+                            }.getOrDefault(com.warrio.app.ui.claim.WarrantyClaimStatus.SUBMITTED),
+                            submittedAtEpochMillis = item.optLong("submittedAtEpochMillis"),
+                        )
+                    }
+                }
+            }.getOrDefault(emptyList())
+            savedClaims.groupBy { it.productId }.forEach { (productId, claims) -> put(productId, claims) }
+        }
     }
     var selectedProduct by remember { mutableStateOf<WalletProductUiModel?>(null) }
 
@@ -63,6 +88,7 @@ fun WarrioApp(
         }
         composable(WarrioDestination.Dashboard.route) {
             DashboardScreen(
+                products = walletProducts,
                 onOpenWallet = {
                     navController.navigate(WarrioDestination.Wallet.route) {
                         launchSingleTop = true
@@ -169,6 +195,19 @@ fun WarrioApp(
                 onBack = { navController.popBackStack() },
                 onSubmitClaim = { claim ->
                     addClaimToProduct(productClaims, claim)
+                    val allClaims = productClaims.values.flatten()
+                    val saved = JSONArray().apply {
+                        allClaims.forEach { item ->
+                            put(JSONObject().apply {
+                                put("id", item.id)
+                                put("productId", item.productId)
+                                put("description", item.description)
+                                put("status", item.status.name)
+                                put("submittedAtEpochMillis", item.submittedAtEpochMillis)
+                            })
+                        }
+                    }
+                    claimPreferences.edit().putString("claims", saved.toString()).apply()
                     navController.popBackStack()
                 },
             )
