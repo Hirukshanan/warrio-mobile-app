@@ -41,7 +41,32 @@ fun WarrioApp(
     val claimPreferences = remember {
         appContext.getSharedPreferences("warrio_claims", android.content.Context.MODE_PRIVATE)
     }
-    val walletProducts = remember { mutableStateListOf<WalletProductUiModel>() }
+    val productPreferences = remember {
+        appContext.getSharedPreferences("warrio_products", android.content.Context.MODE_PRIVATE)
+    }
+    val walletProducts = remember {
+        mutableStateListOf<WalletProductUiModel>().apply {
+            val savedProducts = runCatching {
+                JSONArray(productPreferences.getString("products", "[]")).let { array ->
+                    (0 until array.length()).mapNotNull { index ->
+                        val item = array.optJSONObject(index) ?: return@mapNotNull null
+                        val name = item.optString("name")
+                        if (name.isBlank()) return@mapNotNull null
+                        WalletProductUiModel(
+                            id = item.optString("id").ifBlank { java.util.UUID.randomUUID().toString() },
+                            name = name,
+                            brand = item.optString("brand"),
+                            modelNumber = item.optString("modelNumber"),
+                            serialNumber = item.optString("serialNumber"),
+                            purchaseDate = item.optString("purchaseDate"),
+                            warrantyMonths = item.optInt("warrantyMonths"),
+                        )
+                    }
+                }
+            }.getOrDefault(emptyList())
+            addAll(savedProducts)
+        }
+    }
     val productDocuments = remember {
         mutableStateMapOf<String, List<DocumentAttachmentUiModel>>()
     }
@@ -126,6 +151,9 @@ fun WarrioApp(
                 onBack = { navController.popBackStack() },
                 onProductCreated = { product ->
                     walletProducts.add(product)
+                    productPreferences.edit()
+                        .putString("products", walletProducts.toJson().toString())
+                        .apply()
                     navController.popBackStack()
                 },
             )
@@ -153,6 +181,9 @@ fun WarrioApp(
                 onBack = { navController.popBackStack() },
                 onProductCreated = { product ->
                     walletProducts.add(product)
+                    productPreferences.edit()
+                        .putString("products", walletProducts.toJson().toString())
+                        .apply()
                     navController.popBackStack(WarrioDestination.Wallet.route, inclusive = false)
                 },
                 viewModel = viewModel(viewModelStoreOwner = receiptEntry),
@@ -212,6 +243,20 @@ fun WarrioApp(
                 },
             )
         }
+    }
+}
+
+private fun List<WalletProductUiModel>.toJson(): JSONArray = JSONArray().apply {
+    forEach { product ->
+        put(JSONObject().apply {
+            put("id", product.id)
+            put("name", product.name)
+            put("brand", product.brand)
+            put("modelNumber", product.modelNumber)
+            put("serialNumber", product.serialNumber)
+            put("purchaseDate", product.purchaseDate)
+            put("warrantyMonths", product.warrantyMonths)
+        })
     }
 }
 
